@@ -10,7 +10,7 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.layers import Input, Dense, LSTM, Embedding, Dropout, Add
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
 # Configuration
 BATCH_SIZE = 32
@@ -154,15 +154,15 @@ def data_generator(captions, features, tokenizer, max_length, vocab_size, batch_
 # 5. Define Model (InceptionV3 adapted)
 inputs1 = Input(shape=(2048,)) # InceptionV3 feature size
 fe1 = Dropout(0.5)(inputs1)
-fe2 = Dense(256, activation='relu')(fe1)
+fe2 = Dense(512, activation='relu')(fe1)
 
 inputs2 = Input(shape=(max_length,))
-se1 = Embedding(vocab_size, 256, mask_zero=True)(inputs2)
+se1 = Embedding(vocab_size, 512, mask_zero=True)(inputs2)
 se2 = Dropout(0.5)(se1)
-se3 = LSTM(256)(se2)
+se3 = LSTM(512)(se2)
 
 decoder1 = Add()([fe2, se3])
-decoder2 = Dense(256, activation='relu')(decoder1)
+decoder2 = Dense(512, activation='relu')(decoder1)
 outputs = Dense(vocab_size, activation='softmax')(decoder2)
 
 model = Model(inputs=[inputs1, inputs2], outputs=outputs)
@@ -189,14 +189,15 @@ dataset = tf.data.Dataset.from_generator(
 )
 
 checkpoint = ModelCheckpoint('best_model_inception.keras', monitor='loss', save_best_only=True, verbose=1)
-early_stop = EarlyStopping(monitor='loss', patience=3)
+early_stop = EarlyStopping(monitor='loss', patience=5)
+reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=3, min_lr=0.0001, verbose=1)
 
 print("🏃‍♂️ Start Training...")
 model.fit(
     dataset,
     epochs=EPOCHS,
     steps_per_epoch=steps,
-    callbacks=[checkpoint, early_stop],
+    callbacks=[checkpoint, early_stop, reduce_lr],
     verbose=1
 )
 
