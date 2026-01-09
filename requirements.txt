@@ -1,0 +1,12 @@
+tensorflow
+flask
+numpy
+pandas
+pillow
+tqdm
+gtts
+deep-translator
+pyngrok
+matplotlib
+jupyter
+notebook

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+data/
+*.keras
+*.pkl
+*.h5
+*.png
+config.json
+.formatted/
